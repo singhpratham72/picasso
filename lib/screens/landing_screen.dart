@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picasso/cubit/search_result_cubit.dart';
 import 'package:picasso/cubit/search_result_state.dart';
@@ -22,7 +23,7 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(text: 'paintings');
+    _searchController = TextEditingController(text: '');
     searchImages(pageNumber);
   }
 
@@ -33,15 +34,23 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Future<void> searchImages(int page) async {
+    String query =
+        _searchController.text.isEmpty ? 'abstract' : _searchController.text;
     final pexelsProvider =
         BlocProvider.of<SearchResultCubit>(context, listen: false);
-    await pexelsProvider.getSearchResult(
-        query: _searchController.text, page: page, perPage: 40);
+    await pexelsProvider.getSearchResult(query: query, page: page, perPage: 40);
     final newResults =
         (pexelsProvider.state as LoadedState).searchResult.photos ?? [];
     setState(() {
       if (page == 1) {
         results = newResults;
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
       } else {
         results.addAll(newResults);
       }
@@ -80,10 +89,18 @@ class _LandingScreenState extends State<LandingScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0.0,
         toolbarHeight: 72.0,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.purple,
+          // statusBarIconBrightness: Brightness.dark,
+          // statusBarBrightness: Brightness.light,
+        ),
         title: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: TextField(
             controller: _searchController,
+            onSubmitted: (_) {
+              searchImages(1);
+            },
             decoration: InputDecoration(
               hintText: 'Search',
               border: OutlineInputBorder(
@@ -180,7 +197,7 @@ class _LandingScreenState extends State<LandingScreen> {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.purple,
+                                color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(10.0),
                                 image: DecorationImage(
                                   fit: BoxFit.cover,

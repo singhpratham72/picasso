@@ -26,7 +26,7 @@ class PhotoDetailsScreen extends StatelessWidget {
               margin:
                   const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
               decoration: BoxDecoration(
-                color: Colors.purple,
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20.0),
                 image: DecorationImage(
                   fit: BoxFit.cover,
